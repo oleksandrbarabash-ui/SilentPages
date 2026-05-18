@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Бібліотека — Головна</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; }
+        .book-card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+<h1>Каталог книг (Тест отримання даних з бекенду)</h1>
+<div id="catalog">Завантаження книг...</div>
+
+<script>
+    // Фронтенд-запрос к твоему новому REST-контроллеру
+    fetch('/api/books')
+        .then(response => response.json())
+        .then(data => {
+            const catalogDiv = document.getElementById('catalog');
+            catalogDiv.innerHTML = ''; // Очищаем текст загрузки
+
+            // Перебираем книги из массива "content" (пагинация)
+            data.content.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                        <h3>📚 "${book.name}" — <i>${book.author}</i></h3>
+                        <p>Жанр: <b>${book.genreName}</b> | Статус: <b>${book.statusName}</b> | Мова: ${book.language}</p>
+                    `;
+                catalogDiv.appendChild(card);
+            });
+        })
+        .catch(error => {
+            document.getElementById('catalog').innerText = 'Помилка завантаження даних';
+            console.error('Error:', error);
+        });
+</script>
+</body>
+</html>
