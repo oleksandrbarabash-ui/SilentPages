@@ -6,51 +6,64 @@ import com.library.model.BookStatus;
 import com.library.repository.BookRepository;
 import com.library.repository.GenreRepository;
 import com.library.repository.BookStatusRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.library.dto.BookDto;
+import com.library.repository.specification.BookSpecifications;
+
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import com.library.dto.BookDto;
-import java.util.List;
+import org.springframework.data.jpa.domain.Specification;
 
+import java.util.List;
 
 @Service
 public class BookService {
 
-    @Autowired
-    public BookService(BookRepository bookRepository) {
+    private final BookRepository bookRepository;
+    private final BookStatusRepository bookStatusRepository;
+    private final GenreRepository genreRepository;
+
+    // Рекомендуемый способ внедрения зависимостей (через конструктор)
+    public BookService(BookRepository bookRepository,
+                       BookStatusRepository bookStatusRepository,
+                       GenreRepository genreRepository) {
         this.bookRepository = bookRepository;
+        this.bookStatusRepository = bookStatusRepository;
+        this.genreRepository = genreRepository;
     }
 
-    @Autowired
-    private BookRepository bookRepository;
+    // Главный метод: динамическая фильтрация, поиск и пагинация
+    public Page<BookDto> getBooks(String search, Integer genreId, Integer statusId, Pageable pageable) {
 
-    @Autowired
-    private BookStatusRepository bookStatusRepository;
+        Specification<Book> spec = Specification.where(BookSpecifications.fetchGenreAndStatus())
+                .and(BookSpecifications.hasSearchText(search))
+                .and(BookSpecifications.hasGenreId(genreId))
+                .and(BookSpecifications.hasStatusId(statusId));
 
-    @Autowired
-    private GenreRepository genreRepository;
+        Page<Book> booksPage = bookRepository.findAll(spec, pageable);
 
-    public List<Book> getAllBooks() {
-        return bookRepository.findAllwGenreStatus();
+        return booksPage.map(book -> new BookDto(
+                book.getId(),
+                book.getName(),
+                book.getAuthor(),
+                book.getLanguage(),
+                book.getPages(),
+                book.getGenre() != null ? book.getGenre().getName() : "Без жанру",
+                book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу"
+        ));
     }
 
-    public List<Book> getBooksByGenre(int genreId) {
-        return bookRepository.findByGenreId(genreId);
-    }
-
-    public List<Book> searchBooks(String keyword) {
-        return bookRepository.searchByNameContaining(keyword);
-    }
-
+    // Получение отдельной книги по ID (пригодится для следующих задач)
     public Book getBookById(int id) {
         return bookRepository.findById(id).orElse(null);
     }
 
+    // Сохранение книги
     public void saveBook(Book book) {
         bookRepository.save(book);
     }
 
+    // Обновление книги
     public void updateBook(Book book, int genreId, int statusId) {
         Genre genre = genreRepository.findById(genreId)
                 .orElseThrow(() -> new RuntimeException("Жанр не знайдено"));
@@ -63,46 +76,8 @@ public class BookService {
         bookRepository.save(book);
     }
 
-    public Page<BookDto> getBooksWithPagination(Pageable pageable) {
-        Page<Book> booksPage = bookRepository.findAllWithGenreAndStatus(pageable);
-
-        // Преобразуем страницу Entity в страницу DTO
-        return booksPage.map(book -> new BookDto(
-                book.getId(),
-                book.getName(),
-                book.getAuthor(),
-                book.getLanguage(),
-                book.getPages(),
-                book.getGenre() != null ? book.getGenre().getName() : "Без жанру",
-                book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу"
-        ));
+    // Получение списка всех жанров для эндпоинта GET /api/genres
+    public List<Genre> getAllGenres() {
+        return genreRepository.findAll();
     }
-
-    public Page<BookDto> getBooks(String search, Pageable pageable) {
-        Page<Book> booksPage;
-
-        // Если поисковый запрос передан и он не пустой — ищем по нему
-        if (search != null && !search.trim().isEmpty()) {
-            booksPage = bookRepository.searchByNameOrAuthor(search, pageable);
-        } else {
-            // Иначе просто отдаем все книги с пагинацией (наш прошлый метод)
-            booksPage = bookRepository.findAllWithGenreAndStatus(pageable);
-        }
-
-        // Трансформируем в DTO
-        return booksPage.map(book -> new BookDto(
-                book.getId(),
-                book.getName(),
-                book.getAuthor(),
-                book.getLanguage(),
-                book.getPages(),
-                book.getGenre() != null ? book.getGenre().getName() : "Без жанру",
-                book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу"
-        ));
-
-    }
-
-
-
 }
-

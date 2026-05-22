@@ -1,5 +1,4 @@
 package com.library.controller;
-
 import com.library.dto.BookDto;
 import com.library.service.BookService;
 import org.springframework.data.domain.Page;
@@ -22,12 +21,13 @@ public class BookRestController {
     // Эндпоинт GET /api/books
     @GetMapping("/books")
     public ResponseEntity<Page<BookDto>> getAllBooks(
-            // Добавляем параметр search, по умолчанию он равен null
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer statusId,
             @PageableDefault(page = 0, size = 10) Pageable pageable) {
 
-        // Передаем параметр в сервис
-        Page<BookDto> books = bookService.getBooks(search, pageable);
+
+        Page<BookDto> books = bookService.getBooks(search, genreId, statusId, pageable);
         return ResponseEntity.ok(books);
     }
 
