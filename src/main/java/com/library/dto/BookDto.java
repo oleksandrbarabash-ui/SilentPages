@@ -1,15 +1,26 @@
 package com.library.dto;
 
+/**
+ * DTO (Data Transfer Object) для сутності "Книга".
+ * Плаский Java-клас без логіки, який містить лише необхідні для клієнта поля.
+ * Навіщо потрібен:
+ * 1. Захищає структуру бази даних від прямого витоку на фронтенд.
+ * 2. Спрощує об'єкт: замість вкладених об'єктів Genre та BookStatus передає лише їхні текстові назви.
+ * 3. Запобігає помилкам циклічних посилань під час конвертації об'єктів Hibernate в JSON.
+ */
 public class BookDto {
     private int id;
     private String name;
     private String author;
     private String language;
     private int pages;
-    private String genreName;       // Вместо всего объекта Genre берем только название
-    private String statusName;      // Вместо всего объекта BookStatus
+    private String genreName;  // Текстова назва жанру замість повного об'єкта
+    private String statusName; // Текстова назва статусу замість повного об'єкта
 
-    // Конструктор для удобной конвертации
+    /**
+     * Конструктор DTO.
+     * Використовується сервісом для швидкого перенесення даних із сутності (Entity) в об'єкт передачі.
+     */
     public BookDto(int id, String name, String author, String language, int pages, String genreName, String statusName) {
         this.id = id;
         this.name = name;
@@ -20,7 +31,11 @@ public class BookDto {
         this.statusName = statusName;
     }
 
-    // Геттеры и Сеттеры (Обязательно!)
+    /**
+     * Геттери полів.
+     * Обов'язкові для бібліотеки Jackson (вбудованої в Spring),
+     * яка автоматично конвертує цей Java-клас у текстовий формат JSON.
+     */
     public int getId() { return id; }
     public String getName() { return name; }
     public String getAuthor() { return author; }
