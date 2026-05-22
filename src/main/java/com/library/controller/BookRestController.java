@@ -49,4 +49,23 @@ public class BookRestController {
         Page<BookDto> books = bookService.getBooks(search, genreId, statusId, pageable);
         return ResponseEntity.ok(books);
     }
+
+    /**
+     * Ендпоінт: GET /api/books/{id}
+     * Знаходить одну книгу за її ID.
+     * Використовується фронтендом для відкриття сторінки (картки) конкретної книги.
+     * @param id ID книги, який передається в URL (наприклад, /api/books/5).
+     * @return JSON з даними книги (200 OK) або пуста відповідь з кодом 404 Not Found.
+     */
+    @GetMapping("/books/{id}")
+    public ResponseEntity<BookDto> getBookById(@PathVariable int id) {
+        BookDto bookDto = bookService.getBookDtoById(id);
+
+        // Якщо книга існує — повертаємо її з кодом 200, якщо ні — віддаємо 404 Not Found
+        if (bookDto != null) {
+            return ResponseEntity.ok(bookDto);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

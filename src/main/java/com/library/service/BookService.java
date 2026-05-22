@@ -78,11 +78,29 @@ public class BookService {
     }
 
     /**
-     * Зберігає новий об'єкт книги або перезаписує існуючий у базі даних.
-     * Використовується операціями створення (POST) та повного оновлення даних.
+     * Що робить: Шукає книгу за ID та трансформує її у безпечний об'єкт BookDto.
+     * Забезпечує роботу ендпоінту отримання детальної інформації про одну книгу.
+     * @param id Унікальний ідентифікатор книги.
+     * @return Об'єкт BookDto або null, якщо книгу не знайдено.
      */
-    public void saveBook(Book book) {
-        bookRepository.save(book);
+    public BookDto getBookDtoById(int id) {
+        // Дістаємо сутність Book з бази даних
+        Book book = bookRepository.findById(id).orElse(null);
+
+        if (book == null) {
+            return null;
+        }
+
+        // Конвертуємо в DTO (точно так само, як у списку книг)
+        return new BookDto(
+                book.getId(),
+                book.getName(),
+                book.getAuthor(),
+                book.getLanguage(),
+                book.getPages(),
+                book.getGenre() != null ? book.getGenre().getName() : "Без жанру",
+                book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу"
+        );
     }
 
     /**
