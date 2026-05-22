@@ -27,4 +27,13 @@ public interface BookRepository extends JpaRepository<Book, Integer> {
     @Query("SELECT b FROM Book b WHERE LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Book> searchByNameContaining(String keyword);
 
+    // Поиск по названию ИЛИ автору с игнорированием регистра + JOIN FETCH для связей + Пагинация
+    @Query(value = "SELECT b FROM Book b LEFT JOIN FETCH b.genre LEFT JOIN FETCH b.bookStatus " +
+            "WHERE LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%'))",
+            countQuery = "SELECT count(b) FROM Book b " +
+                    "WHERE LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+                    "OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Book> searchByNameOrAuthor(String keyword, Pageable pageable);
+
 }

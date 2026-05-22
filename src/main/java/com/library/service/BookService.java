@@ -78,6 +78,31 @@ public class BookService {
         ));
     }
 
+    public Page<BookDto> getBooks(String search, Pageable pageable) {
+        Page<Book> booksPage;
+
+        // Если поисковый запрос передан и он не пустой — ищем по нему
+        if (search != null && !search.trim().isEmpty()) {
+            booksPage = bookRepository.searchByNameOrAuthor(search, pageable);
+        } else {
+            // Иначе просто отдаем все книги с пагинацией (наш прошлый метод)
+            booksPage = bookRepository.findAllWithGenreAndStatus(pageable);
+        }
+
+        // Трансформируем в DTO
+        return booksPage.map(book -> new BookDto(
+                book.getId(),
+                book.getName(),
+                book.getAuthor(),
+                book.getLanguage(),
+                book.getPages(),
+                book.getGenre() != null ? book.getGenre().getName() : "Без жанру",
+                book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу"
+        ));
+
+    }
+
+
 
 }
 

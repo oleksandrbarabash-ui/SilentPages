@@ -6,10 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -25,10 +22,13 @@ public class BookRestController {
     // Эндпоинт GET /api/books
     @GetMapping("/books")
     public ResponseEntity<Page<BookDto>> getAllBooks(
-            // @PageableDefault задает параметры по умолчанию: 0 страница, 10 книг на странице
+            // Добавляем параметр search, по умолчанию он равен null
+            @RequestParam(required = false) String search,
             @PageableDefault(page = 0, size = 10) Pageable pageable) {
 
-        Page<BookDto> books = bookService.getBooksWithPagination(pageable);
+        // Передаем параметр в сервис
+        Page<BookDto> books = bookService.getBooks(search, pageable);
         return ResponseEntity.ok(books);
     }
+
 }
