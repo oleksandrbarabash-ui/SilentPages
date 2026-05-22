@@ -62,4 +62,20 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
+
+    // Обробка поилки невірного HTTP-метода
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(
+            org.springframework.web.HttpRequestMethodNotSupportedException ex, WebRequest request) {
+
+        logger.warn("Спроба викликати ендпоінт непідтримуваним методом: {}", ex.getMethod());
+
+        ErrorResponse errorDetails = new ErrorResponse(
+                HttpStatus.METHOD_NOT_ALLOWED.value(),
+                "Цей HTTP-метод не підтримується для даного ендпоінту. Перевірте тип запиту (POST/GET).",
+                request.getDescription(false)
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.METHOD_NOT_ALLOWED);
+    }
 }
