@@ -69,4 +69,18 @@ public class JwtProvider {
                 .getPayload()
                 .getSubject();
     }
+
+    /**
+     * Витягує назву ролі користувача із розшифрованого JWT-токена.
+     * Дозволяє фільтру безпеки дізнатися роль поточного користувача.
+     */
+    public String getRoleFromToken(String token) {
+        SecretKey key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class); // Дістаємо кастомне поле "role"
+    }
 }

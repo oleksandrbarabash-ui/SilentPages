@@ -86,4 +86,20 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorDetails, HttpStatus.METHOD_NOT_ALLOWED);
     }
+
+    // Обробка помилки відсутності прав доступу (код 403 Forbidden)
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            org.springframework.security.access.AccessDeniedException ex, WebRequest request) {
+
+        logger.warn("Спроба несанкціонованого доступу: {}", ex.getMessage());
+
+        ErrorResponse errorDetails = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(), // 403
+                "Помилка доступу: У вас немає прав для виконання цієї операції (необхідна роль Administrator).",
+                request.getDescription(false)
+        );
+
+        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+    }
 }

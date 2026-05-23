@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * REST-контролер для керування ресурсами книг.
@@ -68,4 +69,15 @@ public class BookRestController {
             return ResponseEntity.notFound().build();
         }
     }
+    /**
+     * Ендпоінт: DELETE /api/books/{id}
+     * Імітує видалення книги. Доступний ТІЛЬКИ для користувачів з роллю 'admin'.
+     * Для перевірки обмеження доступу на основі ролей (RBAC).
+     */
+    @DeleteMapping("/books/{id}")
+    @PreAuthorize("hasRole('ADMIN')") // Spring автоматично шукатиме "ROLE_ADMIN" в контексті
+    public ResponseEntity<String> deleteBook(@PathVariable int id) {
+        return ResponseEntity.ok("Успіх: Книгу з ID " + id + " видалено адміністратором.");
+    }
+
 }

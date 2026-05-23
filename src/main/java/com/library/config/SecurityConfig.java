@@ -12,9 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 @Configuration
-@EnableWebSecurity // Вмикаємо підтримку Web-безпеки
+@EnableWebSecurity// Вмикаємо підтримку Web-безпеки
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
@@ -35,27 +37,32 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(csrf -> csrf.disable()) // Вимикаємо CSRF, бо у нас Stateless REST API
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Вимикаємо сесії (куки)
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Публічні ендпоінти авторизації (вхід та реєстрація доступні всім)
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Каталог книг та жанрів можна переглядати без токена
                         .requestMatchers(HttpMethod.GET, "/api/books/**", "/api/genres/**").permitAll()
-                        // Наш новий ендпоінт профілю — ТІЛЬКИ для авторизованих користувачів
                         .requestMatchers("/api/users/me").authenticated()
-                        // Усі інші запити за замовчуванням теж потребують авторизації
                         .anyRequest().authenticated()
                 )
-                // Підключаємо наш JWT-фільтр ПЕРЕД стандартним фільтром паролів
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 
-                // Налаштування поведінки при спробі неавторизованого доступу (Критерій готовності: 401)
-                .exceptionHandling(eh -> eh.authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"status\":401,\"message\":\"Помилка безпеки: Доступ заборонено. Токен відсутній або невалідний.\"}");
-                }))
+                .exceptionHandling(eh -> eh
+                        // Обробка 401 Unauthorized (якщо токен зламаний або відсутній)
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.getWriter().write("{\"status\":401,\"message\":\"Помилка безпеки: Токен відсутній або невалідний.\"}");
+                        })
+                        // Обробка 403 Forbidden (Критерій готовності: коли у Client немає прав)
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.getWriter().write("{\"status\":403,\"message\":\"Помилка доступу: У вас немає прав для виконання цієї операції (необхідна роль Administrator).\",\"details\":\"uri=" + request.getRequestURI() + "\"}");
+                        })
+                )
                 .build();
     }
 }

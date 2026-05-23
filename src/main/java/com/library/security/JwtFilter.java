@@ -41,15 +41,19 @@ public class JwtFilter extends OncePerRequestFilter {
             // 3. Якщо токен валідний — витягуємо дані
             if (jwtProvider.validateToken(token)) {
                 String email = jwtProvider.getEmailFromToken(token);
+                // 1. Дістаємо реальну роль із токена ("client" або "admin")
+                String role = jwtProvider.getRoleFromToken(token);
 
-                // Створюємо об'єкт аутентифікації для Spring Security (пароль нам не потрібен, ставимо null)
+                // 2. Формуємо правильний формат ролі для Spring Security ("ROLE_CLIENT" або "ROLE_ADMIN")
+                String springSecurityRole = "ROLE_" + role.toUpperCase();
+
+                // 3. Передаємо сформовану роль у список повноважень (Authorities)
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         email,
                         null,
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")) // Тимчасова роль для контексту
+                        Collections.singletonList(new SimpleGrantedAuthority(springSecurityRole))
                 );
 
-                // 4. Зберігаємо користувача в глобальний контекст безпеки Spring Security
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
