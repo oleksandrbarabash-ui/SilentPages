@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.library.dto.LoginRequest;
+import com.library.dto.AuthResponse;
 
 /**
  * REST-контролер для операцій автентифікації та реєстрації.
@@ -34,4 +36,16 @@ public class AuthRestController {
         UserDto createdUser = authService.register(request);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
+
+    /**
+     * Ендпоінт: POST /api/auth/login
+     * Приймає email та пароль, проводить аутентифікацію.
+     * @return Об'єкт AuthResponse з токеном та даними користувача (200 OK).
+     */
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> loginUser(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
 }

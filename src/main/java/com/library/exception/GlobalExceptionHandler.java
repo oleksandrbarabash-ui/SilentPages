@@ -50,16 +50,24 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        logger.warn("Помилка авторизації або валідації: {}", ex.getMessage());
 
-        // Запис попередження в лог (клієнт надіслав некоректний запит)
-        logger.warn("Некоректний запит від клієнта: {}", ex.getMessage());
+        // Перевіряємо текст помилки. Якщо це помилка входу — віддаємо 401 Unauthorized
+        if (ex.getMessage().contains("Невірний email або пароль")) {
+            ErrorResponse errorDetails = new ErrorResponse(
+                    HttpStatus.UNAUTHORIZED.value(), // 401
+                    ex.getMessage(),
+                    request.getDescription(false)
+            );
+            return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
+        }
 
+        // Для всіх інших випадків (наприклад, дублікат email) залишаємо 400 Bad Request
         ErrorResponse errorDetails = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.value(), // 400
                 ex.getMessage(),
                 request.getDescription(false)
         );
-
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 

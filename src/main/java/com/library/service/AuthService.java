@@ -9,6 +9,10 @@ import com.library.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.library.dto.LoginRequest;
+import com.library.dto.AuthResponse;
+import com.library.security.JwtProvider;
+
 
 /**
  * Сервіс для обробки логіки реєстрації та автентифікації користувачів.
@@ -19,13 +23,16 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
 
     public AuthService(UserRepository userRepository,
                        RoleRepository roleRepository,
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder,
+                       JwtProvider jwtProvider, JwtProvider jwtProvider1) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtProvider = jwtProvider;
     }
 
     /**
@@ -70,5 +77,35 @@ public class AuthService {
                 savedUser.getPhone(),
                 savedUser.getRole().getName()
         );
+    }
+
+    /**
+     * Перевіряє наявність користувача, правильність пароля через BCrypt та генерує JWT-токен.
+     * Реалізує безпечну логіку авторизації (входу) користувача.
+     */
+    public AuthResponse login(LoginRequest request) {
+        // 1. Шукаємо користувача за email
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Невірний email або пароль"));
+
+        // 2. Порівнюємо сирий пароль з хешованим із бази даних через BCrypt
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Невірний email або пароль");
+        }
+
+        // 3. Якщо все супер — генеруємо токен
+        String token = jwtProvider.generateToken(user);
+
+        // 4. Збираємо базову інфо
+        UserDto userDto = new UserDto(
+                user.getId(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole().getName()
+        );
+
+        return new AuthResponse(token, userDto);
     }
 }
