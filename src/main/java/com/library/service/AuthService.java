@@ -108,4 +108,23 @@ public class AuthService {
 
         return new AuthResponse(token, userDto);
     }
+
+    /**
+     * Що робить: Знаходить користувача за його email та конвертує в безпечний UserDto.
+     * Навіщо потрібен: Забезпечує отримання даних для профілю поточного авторизованого користувача.
+     */
+    public UserDto getUserProfile(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Користувача з таким email не існує"));
+
+        return new UserDto(
+                user.getId(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole().getName()
+        );
+    }
+
 }

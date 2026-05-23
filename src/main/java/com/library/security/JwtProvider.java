@@ -40,4 +40,33 @@ public class JwtProvider {
                 .signWith(key) // Підписуємо токен нашим ключем
                 .compact();
     }
+
+    /**
+     * Перевіряє, чи токен є валідним (чи не підроблений він і чи не закінчився його термін дії).
+     * Використовується захисним фільтром для відсікання неавторизованих запитів.
+     */
+    public boolean validateToken(String token) {
+        try {
+            SecretKey key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+            // Перевіряємо підпис токена за допомогою нашого секретного ключа
+            Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
+            return true;
+        } catch (Exception e) {
+            // Якщо токен прострочений, змінений або зламаний — повертаємо false
+            return false;
+        }
+    }
+
+    /**
+     * Витягує email користувача (Subject) із розшифрованого токена.
+     */
+    public String getEmailFromToken(String token) {
+        SecretKey key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+    }
 }
