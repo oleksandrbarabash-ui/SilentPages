@@ -62,12 +62,12 @@ public class BookRestController {
     public ResponseEntity<BookDto> getBookById(@PathVariable int id) {
         BookDto bookDto = bookService.getBookDtoById(id);
 
-        // Якщо книга існує — повертаємо її з кодом 200, якщо ні — віддаємо 404 Not Found
-        if (bookDto != null) {
-            return ResponseEntity.ok(bookDto);
-        } else {
-            return ResponseEntity.notFound().build();
+        if (bookDto == null) {
+            // Замість порожнього .notFound().build() викидаємо помилку, яку красиво обробить нашExceptionHandler
+            throw new IllegalArgumentException("Книгу з ID " + id + " не знайдено в базі даних.");
         }
+
+        return ResponseEntity.ok(bookDto);
     }
     /**
      * Ендпоінт: DELETE /api/books/{id}
