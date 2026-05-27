@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Деталі книги — SilentPages</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="navbar-brand">
+    <a href="index.html" style="color: white; text-decoration: none;">
+      <span class="brand-icon">📚</span>
+      <span class="brand-name">Silent<span>Pages</span></span>
+    </a>
+  </div>
+  <div class="nav-actions">
+    <a href="index.html" class="btn-login">Повернутися до каталогу</a>
+  </div>
+</header>
+
+<main class="container" style="margin-top: 2rem;">
+  <div id="bookDetails" class="auth-card" style="max-width: 800px; margin: 0 auto;">
+    <h2 id="bookTitle">Завантаження...</h2>
+    <h3 id="bookAuthor" style="color: var(--primary); margin-top: -10px; margin-bottom: 20px;"></h3>
+
+    <div class="info-card">
+      <div class="info-row">
+        <span class="info-label">Жанр:</span>
+        <span class="info-value" id="bookGenre">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Мова:</span>
+        <span class="info-value" id="bookLanguage">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Кількість сторінок:</span>
+        <span class="info-value" id="bookPages">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Статус:</span>
+        <span class="status-badge" id="bookStatus">—</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="js/book.js"></script>
+</body>
+</html>

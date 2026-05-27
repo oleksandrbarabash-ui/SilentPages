@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реєстрація — SilentPages</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="navbar">
+    <div class="navbar-brand">
+        <a href="index.html" style="color: white; text-decoration: none;">
+            <span class="brand-icon">📚</span>
+            <span class="brand-name">Silent<span>Pages</span></span>
+        </a>
+    </div>
+    <div class="nav-actions">
+        <a href="index.html" class="btn-login">На головну</a>
+        <a href="login.html" class="btn-register">Увійти</a>
+    </div>
+</header>
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h2>Створити акаунт</h2>
+
+        <div id="regAlert" class="alert"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="firstname">Ім'я</label>
+                <input type="text" id="firstname" class="form-control" required placeholder="Олександр">
+            </div>
+            <div class="form-group">
+                <label for="lastname">Прізвище</label>
+                <input type="text" id="lastname" class="form-control" required placeholder="Шевченко">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Номер телефону</label>
+                <input type="tel" id="phone" class="form-control" required placeholder="+380XXXXXXXXX">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Електронна пошта</label>
+                <input type="email" id="email" class="form-control" required placeholder="name@example.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" class="form-control" required minlength="6" placeholder="Мінімум 6 символів">
+            </div>
+            <button type="submit" class="btn-submit">Зареєструватися</button>
+        </form>
+
+        <div class="auth-links">
+            Вже маєте акаунт? <a href="login.html">Увійти</a>
+        </div>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+</body>
+</html>
