@@ -80,4 +80,43 @@ public class CartService {
         cart.getBooks().remove(bookToRemove);
         cartRepository.save(cart);
     }
+
+    /**
+     * Додає обрану книгу до кошика поточного користувача.
+     * Перед додаванням перевіряє, чи існує книга, чи вона доступна для бронювання
+     * та чи не була вона вже додана в кошик цього користувача.
+     * Забезпечує бізнес-правила збору книг читачем перед бронюванням.
+     */
+    @Transactional
+    public void addBookToCart(String email, int bookId) {
+        // 1. Знаходимо або автоматично створюємо кошик користувача за його email
+        ShoppingCart cart = cartRepository.findByUserEmail(email)
+                .orElseGet(() -> {
+                    User user = userRepository.findByEmail(email)
+                            .orElseThrow(() -> new IllegalArgumentException("Користувача не знайдено"));
+                    return cartRepository.save(new ShoppingCart(user));
+                });
+
+        // 2. Критерій: Перевіряємо, чи існує книга в базі даних
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Книгу з вказаним ID не знайдено в базі даних."));
+
+        // 3. Обмеження: Перевіряємо статус доступності книги (якщо статус з ID = 2 "Немає в наявності")
+        if (book.getBookStatus() != null && book.getBookStatus().getId() == 2) {
+            throw new IllegalArgumentException("Ця книга наразі недоступна для бронювання.");
+        }
+
+        // 4. Обмеження: Перевіряємо, чи книга вже є в кошику, щоб уникнути дублювання
+        boolean alreadyInCart = cart.getBooks().stream()
+                .anyMatch(b -> b.getId() == bookId);
+
+        if (alreadyInCart) {
+            throw new IllegalArgumentException("Ця книга вже додана до вашого кошика.");
+        }
+
+        // 5. Якщо всі перевірки пройдено — додаємо книгу до списку кошика
+        cart.getBooks().add(book);
+        cartRepository.save(cart);
+    }
+
 }

@@ -46,4 +46,21 @@ public class CartRestController {
         cartService.removeBookFromCart(email, bookId);
         return ResponseEntity.ok("Книгу успішно видалено з кошика.");
     }
+
+    /**
+     * POST /api/cart/books/{bookId}
+     * Додає обрану книгу до персонального кошика поточного користувача.
+     * Викликається кнопкою "Додати в кошик" на інтерфейсі каталогу.
+     */
+    @PostMapping("/books/{bookId}")
+    public ResponseEntity<String> addBookToCart(@PathVariable int bookId) {
+        // Витягуємо email користувача з контексту безпеки JWT
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        // Викликаємо бізнес-логіку додавання
+        cartService.addBookToCart(email, bookId);
+
+        return ResponseEntity.ok("Книгу успішно додано до вашого кошика.");
+    }
 }
