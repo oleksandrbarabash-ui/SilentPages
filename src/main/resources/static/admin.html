@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель Адміністратора — SilentPages</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="navbar" style="background-color: #1e1b4b;"> <div class="navbar-brand">
+    <a href="index.html" style="color: white; text-decoration: none;">
+        <span class="brand-icon">⚙️</span>
+        <span class="brand-name">SilentPages <span>Admin</span></span>
+    </a>
+</div>
+    <div class="nav-actions">
+        <a href="index.html" class="btn-login">У каталог</a>
+        <a href="profile.html" class="btn-login">Профіль</a>
+    </div>
+</header>
+
+<div class="container profile-layout">
+    <aside class="profile-sidebar">
+        <div class="user-info-brief">
+            <div class="large-avatar" style="background: #e0e7ff; color: var(--primary);">👑</div>
+            <h3>Адміністратор</h3>
+            <p>Панель керування</p>
+        </div>
+        <ul class="profile-menu">
+            <li class="menu-item active">📚 Додати книгу</li>
+            <li class="menu-item" style="opacity: 0.5; cursor: not-allowed;">👥 Користувачі (У розробці)</li>
+        </ul>
+    </aside>
+
+    <main class="profile-content">
+        <h2>Додати нове видання</h2>
+        <div class="auth-card" style="max-width: 100%; box-shadow: none; padding: 0; border: none;">
+            <div id="adminAlert" class="alert"></div>
+
+            <form id="addBookForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="bookName">Назва книги</label>
+                        <input type="text" id="bookName" class="form-control" required placeholder="Наприклад: 1984">
+                    </div>
+                    <div class="form-group">
+                        <label for="bookAuthor">Автор</label>
+                        <input type="text" id="bookAuthor" class="form-control" required placeholder="Джордж Орвелл">
+                    </div>
+                    <div class="form-group">
+                        <label for="bookLanguage">Мова</label>
+                        <input type="text" id="bookLanguage" class="form-control" required placeholder="Українська">
+                    </div>
+                    <div class="form-group">
+                        <label for="bookPages">Кількість сторінок</label>
+                        <input type="number" id="bookPages" class="form-control" required placeholder="320">
+                    </div>
+                    <div class="form-group">
+                        <label for="bookGenre">Жанр</label>
+                        <select id="bookGenre" class="form-control" required>
+                            <option value="" disabled selected>Завантаження жанрів...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookStatus">Статус</label>
+                        <select id="bookStatus" class="form-control" required>
+                            <option value="1">В наявності</option>
+                            <option value="2">Немає в наявності</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit" style="margin-top: 2rem;">Зберегти книгу в базу</button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>

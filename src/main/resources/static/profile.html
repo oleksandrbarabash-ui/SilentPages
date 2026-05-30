@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Особистий кабінет — SilentPages</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="navbar">
+    <div class="navbar-brand">
+        <a href="index.html" style="color: white; text-decoration: none;">
+            <span class="brand-icon">📚</span>
+            <span class="brand-name">Silent<span>Pages</span></span>
+        </a>
+    </div>
+    <div class="nav-actions">
+        <a href="index.html" class="btn-login">На головну</a>
+        <button id="profileLogoutBtn" class="btn-logout">Вийти</button>
+    </div>
+</header>
+
+<div class="container profile-layout">
+    <aside class="profile-sidebar">
+        <div class="user-info-brief">
+            <div class="large-avatar">👤</div>
+            <h3 id="briefName">Завантаження...</h3>
+            <p id="briefEmail">...</p>
+        </div>
+        <ul class="profile-menu">
+            <li class="menu-item active" data-tab="tab-account">👤 Персональні дані</li>
+            <li class="menu-item" data-tab="tab-orders">📦 Мої замовлення</li>
+            <li class="menu-item" data-tab="tab-reservations">⏰ Бронювання книг</li>
+        </ul>
+    </aside>
+
+    <main class="profile-content">
+
+        <div id="tab-account" class="tab-panel active">
+            <h2>Персональні дані</h2>
+            <div class="info-card">
+                <div class="info-row">
+                    <span class="info-label">ID користувача:</span>
+                    <span class="info-value" id="userId">—</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Повне ім'я:</span>
+                    <span class="info-value" id="userName">—</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Електронна пошта:</span>
+                    <span class="info-value" id="userEmail">—</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Рівень доступу (Роль):</span>
+                    <span class="status-badge status-available" id="userRole" style="text-transform: none;">—</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-orders" class="tab-panel">
+            <h2>Історія моїх замовлень</h2>
+            <div class="empty-state">
+                <div class="empty-icon">📦</div>
+                <h3>У вас поки немає активних замовлень</h3>
+                <p>Тут з'явиться список книг, які ви взяли почитати додому.</p>
+            </div>
+        </div>
+
+        <div id="tab-reservations" class="tab-panel">
+            <h2>Поточні бронювання книг</h2>
+            <div class="empty-state">
+                <div class="empty-icon">⏰</div>
+                <h3>Немає активних бронювань</h3>
+                <p>Коли ви забронюєте книгу на сайті, вона очікуватиме на вас у бібліотеці, а статус відобразиться тут.</p>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script src="js/profile.js"></script>
+</body>
+</html>

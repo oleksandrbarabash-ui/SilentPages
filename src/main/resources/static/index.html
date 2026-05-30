@@ -2,39 +2,69 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Бібліотека — Головна</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; }
-        .book-card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SilentPages — Сучасна Цифрова Бібліотека</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>Каталог книг (Тест отримання даних з бекенду)</h1>
-<div id="catalog">Завантаження книг...</div>
 
-<script>
-    // Фронтенд-запрос к твоему новому REST-контроллеру
-    fetch('/api/books')
-        .then(response => response.json())
-        .then(data => {
-            const catalogDiv = document.getElementById('catalog');
-            catalogDiv.innerHTML = ''; // Очищаем текст загрузки
+<header class="navbar">
+    <div class="navbar-brand">
+        <span class="brand-icon">📚</span>
+        <span class="brand-name">Silent<span>Pages</span></span>
+    </div>
 
-            // Перебираем книги из массива "content" (пагинация)
-            data.content.forEach(book => {
-                const card = document.createElement('div');
-                card.className = 'book-card';
-                card.innerHTML = `
-                        <h3>📚 "${book.name}" — <i>${book.author}</i></h3>
-                        <p>Жанр: <b>${book.genreName}</b> | Статус: <b>${book.statusName}</b> | Мова: ${book.language}</p>
-                    `;
-                catalogDiv.appendChild(card);
-            });
-        })
-        .catch(error => {
-            document.getElementById('catalog').innerText = 'Помилка завантаження даних';
-            console.error('Error:', error);
-        });
-</script>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Шукати книгу за назвою або автором...">
+        <button id="searchBtn">
+            <span class="search-icon">🔍</span>
+        </button>
+    </div>
+
+    <div class="nav-actions" id="navActions">
+        <a href="login.html" class="btn-login">Увійти</a>
+        <a href="register.html" class="btn-register">Реєстрація</a>
+    </div>
+</header>
+
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Твій затишний простір для читання</h1>
+        <p>Досліджуй сотні дивовижних історій, керуй своїми книгами та відкривай нові світи разом із SilentPages.</p>
+    </div>
+</section>
+
+<div class="main-layout">
+
+    <aside class="sidebar">
+        <div class="sidebar-block">
+            <h3>📁 Категорії та Жанри</h3>
+            <ul class="filter-list" id="genreFilter">
+                <li class="active" data-genre="all">Всі жанри</li>
+            </ul>
+        </div>
+
+        <div class="sidebar-block">
+            <h3>🌐 Мова видання</h3>
+            <ul class="filter-list" id="languageFilter">
+                <li class="active" data-lang="all">Будь-яка</li>
+                <li data-lang="Українська">Українська</li>
+                <li data-lang="English">English</li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="content-area">
+        <div class="content-header">
+            <h2>Каталог видань</h2>
+            <span class="results-count" id="resultsCount">Завантаження...</span>
+        </div>
+
+        <div id="catalog" class="books-grid">
+        </div>
+    </main>
+</div>
+
+<script src="js/catalog.js"></script>
 </body>
 </html>
