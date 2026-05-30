@@ -5,6 +5,10 @@ import com.library.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
+import com.library.dto.ReservationBookItemDto;
+import com.library.dto.ReservationDto;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
@@ -38,7 +42,7 @@ public class ReservationService {
         ShoppingCart cart = cartRepository.findByUserEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Кошик користувача не знайдено."));
 
-        // 2. Критерій: Перевірка на порожній кошик
+        // 2. Перевірка на порожній кошик
         if (cart.getBooks().isEmpty()) {
             throw new IllegalArgumentException("Неможливо оформити бронювання: ваш кошик порожній.");
         }
@@ -71,4 +75,39 @@ public class ReservationService {
         cart.getBooks().clear();
         cartRepository.save(cart);
     }
+
+    /**
+     * Витягує всі бронювання користувача за його email, підтягує пов'язані
+     * з ними книги та статуси, формуючи безпечний список DTO.
+     * Для сторінки "Мої бронювання", повністю ізолює дані інших користувачів.
+     */
+    @Transactional(readOnly = true) //вказуємо, що тут ми тільки читаємо дані
+    public List<ReservationDto> getMyReservations(String email) {
+        // 1. Отримуємо всі бронювання поточного користувача
+        List<Reservation> reservations = reservationRepository.findByOwnerEmailOrderByCreateTimeDesc(email);
+
+        // 2. Проходимося по кожному бронюванню та перетворюємо його на DTO
+        return reservations.stream().map(reservation -> {
+
+            // 3. Для кожного бронювання дістаємо список його книг
+            List<ReservationBook> reservationBooks = reservationBookRepository.findByReservationId(reservation.getId());
+
+            // 4. Перетворюємо сутності ReservationBook на акуратні ReservationBookItemDto
+            List<ReservationBookItemDto> bookDtos = reservationBooks.stream().map(rb -> new ReservationBookItemDto(
+                    rb.getBook().getId(),
+                    rb.getBook().getName(),
+                    rb.getBook().getAuthor(),
+                    rb.getStatus().getName()
+            )).collect(Collectors.toList());
+
+            // 5. Повертаємо зібране бронювання
+            return new ReservationDto(
+                    reservation.getId(),
+                    reservation.getCreateTime(),
+                    reservation.getStatus().getName(),
+                    bookDtos
+            );
+        }).collect(Collectors.toList());
+    }
+
 }
