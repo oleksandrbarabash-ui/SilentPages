@@ -1,0 +1,33 @@
+package com.library.controller;
+
+import com.library.service.ReservationService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/reservations")
+@CrossOrigin(origins = "*")
+public class ReservationRestController {
+
+    private final ReservationService reservationService;
+
+    public ReservationRestController(ReservationService reservationService) {
+        this.reservationService = reservationService;
+    }
+
+    /**
+     * POST /api/reservations
+     * Оформлює бронювання на основі поточного кошика авторизованого юзера.
+     */
+    @PostMapping
+    public ResponseEntity<String> createReservation() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        reservationService.createReservationFromCart(email);
+
+        return ResponseEntity.status(201).body("Бронювання успішно оформлено! Ви можете переглянути його у вкладці 'Мої бронювання'.");
+    }
+}
