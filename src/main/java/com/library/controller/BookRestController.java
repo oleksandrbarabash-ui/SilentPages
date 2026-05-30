@@ -9,6 +9,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import java.util.List;
 
 /**
  * REST-контролер для керування ресурсами книг.
@@ -46,9 +47,11 @@ public class BookRestController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Integer genreId,
             @RequestParam(required = false) Integer statusId,
+            @RequestParam(required = false) String language,
             @PageableDefault(page = 0, size = 10) Pageable pageable) {
 
-        Page<BookDto> books = bookService.getBooks(search, genreId, statusId, pageable);
+
+        Page<BookDto> books = bookService.getBooks(search, genreId, statusId, language, pageable);
         return ResponseEntity.ok(books);
     }
 
@@ -96,5 +99,14 @@ public class BookRestController {
 
         bookService.createBook(book, genreId, statusId);
         return ResponseEntity.status(201).body("Книгу успішно додано до бази даних.");
+    }
+
+    /**
+     * GET /api/books/languages
+     * Повертає масив унікальних мов, які зараз є в бібліотеці.
+     */
+    @GetMapping("/books/languages")
+    public ResponseEntity<List<String>> getAvailableLanguages() {
+        return ResponseEntity.ok(bookService.getAllLanguages());
     }
 }

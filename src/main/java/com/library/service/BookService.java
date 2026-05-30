@@ -46,18 +46,19 @@ public class BookService {
      * Головне серце каталогу книг. Забезпечує одночасний пошук, пагінацію та фільтрацію.
      * * @return Сторінка Page, заповнена BookDto з метаданими для фронтенду.
      */
-    public Page<BookDto> getBooks(String search, Integer genreId, Integer statusId, Pageable pageable) {
+    public Page<BookDto> getBooks(String search, Integer genreId, Integer statusId, String language, Pageable pageable) {
 
-        // Комбінуємо шматочки SQL-запиту в одне ціле за допомогою .and()
+        // Комбінуємо шматочки SQL-запиту в одне ціле, додаючи фільтр за мовою
         Specification<Book> spec = Specification.where(BookSpecifications.fetchGenreAndStatus())
                 .and(BookSpecifications.hasSearchText(search))
                 .and(BookSpecifications.hasGenreId(genreId))
-                .and(BookSpecifications.hasStatusId(statusId));
+                .and(BookSpecifications.hasStatusId(statusId))
+                .and(BookSpecifications.hasLanguage(language));
 
         // Виконуємо оптимізований запит у MySQL
         Page<Book> booksPage = bookRepository.findAll(spec, pageable);
 
-        // Трансформуємо кожну знайдену сутність Book у плоский об'єкт BookDto перед відправкою клієнту
+        // Трансформуємо у DTO
         return booksPage.map(book -> new BookDto(
                 book.getId(),
                 book.getName(),
@@ -158,5 +159,12 @@ public class BookService {
      */
     public List<Genre> getAllGenres() {
         return genreRepository.findAll();
+    }
+    /**
+     * Повертає список унікальних мов для фільтра на фронтенді.
+     * Щоб у випадаючому списку не було мов, для яких немає книг.
+     */
+    public List<String> getAllLanguages() {
+        return bookRepository.findDistinctLanguages();
     }
 }

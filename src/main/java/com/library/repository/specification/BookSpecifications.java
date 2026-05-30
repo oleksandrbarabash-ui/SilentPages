@@ -64,4 +64,17 @@ public class BookSpecifications {
             return null;
         };
     }
+
+    /**
+     * Специфікація для фільтрації за мовою.
+     * Якщо мова не передана або дорівнює "Будь-яка" — фільтр ігнорується.
+     */
+    public static Specification<Book> hasLanguage(String language) {
+        return (root, query, criteriaBuilder) -> {
+            if (language == null || language.trim().isEmpty() || language.equalsIgnoreCase("Будь-яка")) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.equal(root.get("language"), language);
+        };
+    }
 }
