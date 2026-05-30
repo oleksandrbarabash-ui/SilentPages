@@ -12,4 +12,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
     // Шукаємо всі бронювання юзера за його email, сортуючи від найновіших до найстаріших
     List<Reservation> findByOwnerEmailOrderByCreateTimeDesc(String email);
 
+    // Витягуємо абсолютно всі бронювання для адмін-панелі
+    List<Reservation> findAllByOrderByCreateTimeDesc();
 }

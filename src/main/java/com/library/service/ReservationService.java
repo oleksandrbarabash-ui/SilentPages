@@ -9,6 +9,8 @@ import com.library.dto.ReservationBookItemDto;
 import com.library.dto.ReservationDto;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.library.dto.AdminReservationDto;
+import com.library.dto.StatusUpdateRequest;
 
 @Service
 public class ReservationService {
@@ -108,6 +110,61 @@ public class ReservationService {
                     bookDtos
             );
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * Повертає список УСІХ бронювань у системі для панелі бібліотекаря.
+     * Виконує критерій приймання щодо відображення повної службової сторінки.
+     */
+    @Transactional(readOnly = true)
+    public List<AdminReservationDto> getAllReservationsForAdmin() {
+        List<Reservation> reservations = reservationRepository.findAllByOrderByCreateTimeDesc();
+
+        return reservations.stream().map(reservation -> {
+            List<ReservationBook> reservationBooks = reservationBookRepository.findByReservationId(reservation.getId());
+
+            List<ReservationBookItemDto> bookDtos = reservationBooks.stream().map(rb -> new ReservationBookItemDto(
+                    rb.getBook().getId(),
+                    rb.getBook().getName(),
+                    rb.getBook().getAuthor(),
+                    rb.getStatus().getName()
+            )).collect(Collectors.toList());
+
+            String fullName = reservation.getOwner().getFirstname() + " " + (reservation.getOwner().getLastname() != null ? reservation.getOwner().getLastname() : "");
+
+            return new AdminReservationDto(
+                    reservation.getId(),
+                    reservation.getOwner().getEmail(),
+                    fullName.trim(),
+                    reservation.getCreateTime(),
+                    reservation.getUpdateTime(),
+                    reservation.getStatus().getName(),
+                    bookDtos
+            );
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Змінює загальний статус бронювання на основі перевірки існуючих статусів в БД
+     * та автоматично оновлює дату модифікації (update_time).
+     * Дозволяє бібліотекарю підтверджувати або відхиляти заявки користувачів.
+     */
+    @Transactional
+    public void updateReservationStatus(int reservationId, StatusUpdateRequest request) {
+        // 1. Шукаємо замовлення
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("Бронювання з ID " + reservationId + " не знайдено."));
+
+        // 2. Перевіряємо, чи існує такий статус у базі даних
+        ReservationStatus newStatus = reservationStatusRepository.findById(request.getStatusId())
+                .orElseThrow(() -> new IllegalArgumentException("Вказано некоректний або неіснуючий код статусу замовлення."));
+
+        // 3. Оновлюємо статус та час модифікації
+        reservation.setStatus(newStatus);
+        reservation.setUpdateTime(LocalDate.now());
+
+        // Зберігаємо зміни
+        reservationRepository.save(reservation);
     }
 
 }
