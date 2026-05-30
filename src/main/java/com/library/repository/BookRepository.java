@@ -15,4 +15,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BookRepository extends JpaRepository<Book, Integer>, JpaSpecificationExecutor<Book> {
 
+    /**
+     * Перевіряє, чи існує вже книга з ідентичними параметрами.
+     */
+    boolean existsByNameAndAuthorAndLanguageAndPages(String name, String author, String language, int pages);
+
 }

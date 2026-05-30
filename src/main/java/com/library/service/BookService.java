@@ -121,6 +121,38 @@ public class BookService {
     }
 
     /**
+     * Перевіряє книгу на унікальність за назвою, автором, мовою та сторінками.
+     * Якщо копій немає — прив'язує жанр, статус і створює новий запис у БД.
+     * Для безпечного додавання нових книг адміном без дублювання даних.
+     */
+    public void createBook(Book book, int genreId, int statusId) {
+
+        boolean isDuplicate = bookRepository.existsByNameAndAuthorAndLanguageAndPages(
+                book.getName(),
+                book.getAuthor(),
+                book.getLanguage(),
+                book.getPages()
+        );
+
+        if (isDuplicate) {
+            throw new IllegalArgumentException("Така книга ('" + book.getName() + "' від автора " + book.getAuthor() + ") вже існує в каталозі.");
+        }
+
+        // 2. Шукаємо жанр та статус, як і при оновленні
+        Genre genre = genreRepository.findById(genreId)
+                .orElseThrow(() -> new RuntimeException("Жанр не знайдено"));
+
+        BookStatus status = bookStatusRepository.findById(statusId)
+                .orElseThrow(() -> new RuntimeException("Статус не знайдено"));
+
+        book.setGenre(genre);
+        book.setBookStatus(status);
+
+        // 3. Зберігаємо
+        bookRepository.save(book);
+    }
+
+    /**
      * Витягує всі наявні жанри з БД.
      * Передає дані репозиторію до відповідного REST-контролера для довідника фільтрів.
      */

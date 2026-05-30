@@ -1,6 +1,7 @@
 package com.library.controller;
 
 import com.library.dto.BookDto;
+import com.library.model.Book;
 import com.library.service.BookService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -80,4 +81,20 @@ public class BookRestController {
         return ResponseEntity.ok("Успіх: Книгу з ID " + id + " видалено адміністратором.");
     }
 
+    /**
+     * Ендпоінт: POST /api/books
+     * Що робить: Приймає дані нової книги у форматі JSON, а також ID жанру та статусу.
+     * Доступний ТІЛЬКИ для адміністраторів додатка.
+     * Навіщо потрібен: Дозволяє безпечно додавати нові видання через адмін-панель з валідацією на дублікати.
+     */
+    @PostMapping("/books")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> createBook(
+            @RequestBody Book book,
+            @RequestParam int genreId,
+            @RequestParam int statusId) {
+
+        bookService.createBook(book, genreId, statusId);
+        return ResponseEntity.status(201).body("Книгу успішно додано до бази даних.");
+    }
 }
