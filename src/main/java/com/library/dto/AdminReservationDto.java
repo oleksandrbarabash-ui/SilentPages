@@ -13,17 +13,19 @@ public class AdminReservationDto {
     private LocalDate createTime;
     private LocalDate updateTime;
     private String overallStatus;
+    private LocalDate endDate;
     private List<ReservationBookItemDto> books;
 
     public AdminReservationDto(int id, String userEmail, String userFullName,
                                LocalDate createTime, LocalDate updateTime,
-                               String overallStatus, List<ReservationBookItemDto> books) {
+                               String overallStatus, LocalDate endDate, List<ReservationBookItemDto> books) {
         this.id = id;
         this.userEmail = userEmail;
         this.userFullName = userFullName;
         this.createTime = createTime;
         this.updateTime = updateTime;
         this.overallStatus = overallStatus;
+        this.endDate = endDate;
         this.books = books;
     }
 
@@ -34,5 +36,6 @@ public class AdminReservationDto {
     public LocalDate getCreateTime() { return createTime; }
     public LocalDate getUpdateTime() { return updateTime; }
     public String getOverallStatus() { return overallStatus; }
+    public LocalDate getEndDate() { return endDate; }
     public List<ReservationBookItemDto> getBooks() { return books; }
 }

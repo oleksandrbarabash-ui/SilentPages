@@ -20,13 +20,14 @@ public class ReservationBook {
     @JoinColumn(name = "reservation_id")
     private Reservation reservation;
 
-    @Column(name = "date_of_issue", nullable = false)
+
+    @Column(name = "date_of_issue")
     private LocalDate dateOfIssue;
 
-    @Column(name = "return_date", nullable = false)
+    @Column(name = "return_date")
     private LocalDate returnDate;
 
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "end_date")
     private LocalDate endDate;
 
     @ManyToOne
@@ -40,11 +41,8 @@ public class ReservationBook {
         this.reservation = reservation;
         this.book = book;
         this.status = status;
-        this.dateOfIssue = LocalDate.now();
-        this.returnDate = LocalDate.now().plusDays(14); // Стандартний термін видачі книги — 14 днів
-        this.endDate = LocalDate.now().plusDays(14);
+        
     }
-
     // Геттери та сеттери
     public ReservationBookId getId() { return id; }
     public Book getBook() { return book; }
@@ -53,4 +51,5 @@ public class ReservationBook {
     public LocalDate getReturnDate() { return returnDate; }
     public LocalDate getEndDate() { return endDate; }
     public ReservationBookStatus getStatus() { return status; }
+    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
 }

@@ -104,16 +104,16 @@ public class ReservationService {
      */
     @Transactional(readOnly = true) //вказуємо, що тут ми тільки читаємо дані
     public List<ReservationDto> getMyReservations(String email) {
-        // 1. Отримуємо всі бронювання поточного користувача
+        // Отримуємо всі бронювання поточного користувача
         List<Reservation> reservations = reservationRepository.findByOwnerEmailOrderByCreateTimeDesc(email);
 
-        // 2. Проходимося по кожному бронюванню та перетворюємо його на DTO
+        // Проходимося по кожному бронюванню та перетворюємо його на DTO
         return reservations.stream().map(reservation -> {
 
-            // 3. Для кожного бронювання дістаємо список його книг
+            // Для кожного бронювання дістаємо список його книг
             List<ReservationBook> reservationBooks = reservationBookRepository.findByReservationId(reservation.getId());
 
-            // 4. Перетворюємо сутності ReservationBook на акуратні ReservationBookItemDto
+            // Перетворюємо сутності ReservationBook на акуратні ReservationBookItemDto
             List<ReservationBookItemDto> bookDtos = reservationBooks.stream().map(rb -> new ReservationBookItemDto(
                     rb.getBook().getId(),
                     rb.getBook().getName(),
@@ -121,11 +121,15 @@ public class ReservationService {
                     rb.getStatus().getName()
             )).collect(Collectors.toList());
 
-            // 5. Повертаємо зібране бронювання
+            // Витягуємо дату закінчення з першої книги (якщо книги є)
+            LocalDate reservationEndDate = reservationBooks.isEmpty() ? null : reservationBooks.get(0).getEndDate();
+
+            // Повертаємо зібране бронювання
             return new ReservationDto(
                     reservation.getId(),
                     reservation.getCreateTime(),
                     reservation.getStatus().getName(),
+                    reservationEndDate,
                     bookDtos
             );
         }).collect(Collectors.toList());
@@ -151,6 +155,9 @@ public class ReservationService {
 
             String fullName = reservation.getOwner().getFirstname() + " " + (reservation.getOwner().getLastname() != null ? reservation.getOwner().getLastname() : "");
 
+            // Витягуємо дату закінчення з першої книги
+            LocalDate reservationEndDate = reservationBooks.isEmpty() ? null : reservationBooks.get(0).getEndDate();
+
             return new AdminReservationDto(
                     reservation.getId(),
                     reservation.getOwner().getEmail(),
@@ -158,6 +165,7 @@ public class ReservationService {
                     reservation.getCreateTime(),
                     reservation.getUpdateTime(),
                     reservation.getStatus().getName(),
+                    reservationEndDate,
                     bookDtos
             );
         }).collect(Collectors.toList());
@@ -196,7 +204,7 @@ public class ReservationService {
 
                 // помилка під час збереження скасує попередні списання
                 // і жодна книга не буде списана, якщо чогось не вистачає.
-
+                rb.setEndDate(LocalDate.now().plusDays(14));
                 // Якщо після списання доступних примірників стало 0
                 if (book.getAvailableCopies() == 0) {
                     // Знаходимо статус "Немає в наявності"
