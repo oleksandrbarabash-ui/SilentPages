@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import com.library.dto.AdminReservationDto;
 import com.library.dto.StatusUpdateRequest;
 import java.util.Arrays;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class ReservationService {
@@ -102,13 +104,14 @@ public class ReservationService {
      * з ними книги та статуси, формуючи безпечний список DTO.
      * Для сторінки "Мої бронювання", повністю ізолює дані інших користувачів.
      */
-    @Transactional(readOnly = true) //вказуємо, що тут ми тільки читаємо дані
-    public List<ReservationDto> getMyReservations(String email) {
-        // Отримуємо всі бронювання поточного користувача
-        List<Reservation> reservations = reservationRepository.findByOwnerEmailOrderByCreateTimeDesc(email);
+    @Transactional(readOnly = true)
+    public Page<ReservationDto> getMyReservations(String email, Pageable pageable) {
 
-        // Проходимося по кожному бронюванню та перетворюємо його на DTO
-        return reservations.stream().map(reservation -> {
+        // 1. Отримуємо сторінку сутностей із бази даних
+        Page<Reservation> reservationsPage = reservationRepository.findByOwnerEmailOrderByCreateTimeDesc(email, pageable);
+
+        // 2. Трансформуємо сторінку Entity у сторінку безпечних DTO
+        return reservationsPage.map(reservation -> {
 
             // Для кожного бронювання дістаємо список його книг
             List<ReservationBook> reservationBooks = reservationBookRepository.findByReservationId(reservation.getId());
@@ -132,7 +135,7 @@ public class ReservationService {
                     reservationEndDate,
                     bookDtos
             );
-        }).collect(Collectors.toList());
+        });
     }
 
     /**

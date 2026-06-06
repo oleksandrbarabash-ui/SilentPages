@@ -7,6 +7,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import com.library.dto.ReservationDto;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -35,14 +38,17 @@ public class ReservationRestController {
 
     /**
      * GET /api/reservations/my
-     * Повертає список усіх бронювань поточного авторизованого користувача.
+     * Повертає список бронювань поточного авторизованого користувача з підтримкою пагінації.
      */
     @GetMapping("/my")
-    public ResponseEntity<List<ReservationDto>> getMyReservations() {
+    public ResponseEntity<Page<ReservationDto>> getMyReservations(
+            @PageableDefault(page = 0, size = 10) Pageable pageable) { // <-- Додано Pageable
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        List<ReservationDto> myReservations = reservationService.getMyReservations(email);
+        // Передаємо pageable у сервіс
+        Page<ReservationDto> myReservations = reservationService.getMyReservations(email, pageable);
 
         return ResponseEntity.ok(myReservations);
     }
