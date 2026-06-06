@@ -46,16 +46,16 @@ public class ReservationService {
      */
     @Transactional
     public void createReservationFromCart(String email) {
-        // 1. Отримуємо кошик користувача
+        // Отримуємо кошик користувача
         ShoppingCart cart = cartRepository.findByUserEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Кошик користувача не знайдено."));
 
-        // 2. Перевірка на порожній кошик
+        // Перевірка на порожній кошик
         if (cart.getBooks().isEmpty()) {
             throw new IllegalArgumentException("Неможливо оформити бронювання: ваш кошик порожній.");
         }
 
-        // 3. БІЗНЕС-ПРАВИЛО: Перевірка ліміту активних бронювань (Максимум 5)
+        // Перевірка ліміту активних бронювань (Максимум 5)
         List<Integer> activeStatuses = Arrays.asList(1, 3, 4); // Підтверджено, Очікування, Прострочено
         int activeReservationsCount = reservationRepository.countByOwnerEmailAndStatusIdIn(email, activeStatuses);
 
@@ -67,6 +67,11 @@ public class ReservationService {
         for (Book book : cart.getBooks()) {
             if (book.getAvailableCopies() <= 0) {
                 throw new IllegalArgumentException("Книга '" + book.getName() + "' закінчилася. Будь ласка, видаліть її з кошика перед оформленням.");
+            }
+
+            // Перевірка за ручним статусом книги (id = 2 -> "Немає в наявності")
+            if (book.getBookStatus() != null && book.getBookStatus().getId() == 2) {
+                throw new IllegalArgumentException("Книга '" + book.getName() + "' більше недоступна для бронювання. Будь ласка, видаліть її з кошика.");
             }
         }
 
