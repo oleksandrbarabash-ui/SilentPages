@@ -33,6 +33,11 @@ public class Book {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "total_copies", nullable = false)
+    private int totalCopies;
+
+    @Column(name = "available_copies", nullable = false)
+    private int availableCopies;
     /**
      * Конструктор за замовчуванням (Порожній).
      * Обов'язкова вимога специфікації JPA. Без нього Hibernate
@@ -45,7 +50,7 @@ public class Book {
      * Використовується у коді розробника для швидкого створення
      * нового об'єкта книги перед збереженням її в базу даних.
      */
-    public Book(String name, String author, String language, int pages, BookStatus bookStatus, Genre genre, String description) {
+    public Book(String name, String author, String language, int pages, BookStatus bookStatus, Genre genre, String description, int totalCopies, int availableCopies) {
         this.name = name;
         this.author = author;
         this.language = language;
@@ -53,6 +58,8 @@ public class Book {
         this.bookStatus = bookStatus;
         this.genre = genre;
         this.description = description;
+        this.totalCopies = totalCopies;
+        this.availableCopies = availableCopies;
     }
 
     /**
@@ -74,4 +81,8 @@ public class Book {
     public void setGenre(Genre genre) { this.genre = genre; }
     public String getDescription() {return description;}
     public void setDescription(String description) {this.description = description;}
+    public int getTotalCopies() { return totalCopies; }
+    public void setTotalCopies(int totalCopies) { this.totalCopies = totalCopies; }
+    public int getAvailableCopies() { return availableCopies; }
+    public void setAvailableCopies(int availableCopies) { this.availableCopies = availableCopies; }
 }

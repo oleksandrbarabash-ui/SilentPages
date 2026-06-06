@@ -17,13 +17,15 @@ public class BookDto {
     private String genreName;  // Текстова назва жанру замість повного об'єкта
     private String statusName; // Текстова назва статусу замість повного об'єкта
     private String description;
-
+    private int totalCopies;
+    private int availableCopies;
     /**
      * Конструктор DTO.
      * Використовується сервісом для швидкого перенесення даних із сутності (Entity) в об'єкт передачі.
      */
     public BookDto(int id, String name, String author, String language, int pages,
-                   String genreName, String statusName, String description) {
+                   String genreName, String statusName, String description,
+                   int totalCopies, int availableCopies) { // <-- Оновлено
         this.id = id;
         this.name = name;
         this.author = author;
@@ -32,6 +34,8 @@ public class BookDto {
         this.genreName = genreName;
         this.statusName = statusName;
         this.description = description;
+        this.totalCopies = totalCopies;
+        this.availableCopies = availableCopies;
     }
 
     /**
@@ -47,4 +51,6 @@ public class BookDto {
     public String getGenreName() { return genreName; }
     public String getStatusName() { return statusName; }
     public String getDescription() { return description; }
+    public int getTotalCopies() { return totalCopies; }
+    public int getAvailableCopies() { return availableCopies; }
 }

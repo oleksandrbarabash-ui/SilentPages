@@ -21,17 +21,20 @@ public class ReservationService {
     private final ReservationBookRepository reservationBookRepository;
     private final ReservationStatusRepository reservationStatusRepository;
     private final ReservationBookStatusRepository reservationBookStatusRepository;
+    private final BookStatusRepository bookStatusRepository;
 
     public ReservationService(ShoppingCartRepository cartRepository,
                               ReservationRepository reservationRepository,
                               ReservationBookRepository reservationBookRepository,
                               ReservationStatusRepository reservationStatusRepository,
-                              ReservationBookStatusRepository reservationBookStatusRepository) {
+                              ReservationBookStatusRepository reservationBookStatusRepository,
+                              BookStatusRepository bookStatusRepository) { // <-- ДОДАНО ПАРАМЕТР
         this.cartRepository = cartRepository;
         this.reservationRepository = reservationRepository;
         this.reservationBookRepository = reservationBookRepository;
         this.reservationStatusRepository = reservationStatusRepository;
         this.reservationBookStatusRepository = reservationBookStatusRepository;
+        this.bookStatusRepository = bookStatusRepository; // <-- ПРИСВОЄНО ЗНАЧЕННЯ
     }
 
     /**
@@ -56,6 +59,13 @@ public class ReservationService {
 
         if (activeReservationsCount >= 5) {
             throw new IllegalArgumentException("Перевищено ліміт: Ви не можете мати більше 5 активних бронювань одночасно.");
+        }
+
+        // Перевірка наявності кожної книги перед створенням бронювання
+        for (Book book : cart.getBooks()) {
+            if (book.getAvailableCopies() <= 0) {
+                throw new IllegalArgumentException("Книга '" + book.getName() + "' закінчилася. Будь ласка, видаліть її з кошика перед оформленням.");
+            }
         }
 
         // 4. Завантажуємо системні початкові статуси з бази даних
@@ -160,19 +170,52 @@ public class ReservationService {
      */
     @Transactional
     public void updateReservationStatus(int reservationId, StatusUpdateRequest request) {
-        // 1. Шукаємо замовлення
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new IllegalArgumentException("Бронювання з ID " + reservationId + " не знайдено."));
 
-        // 2. Перевіряємо, чи існує такий статус у базі даних
         ReservationStatus newStatus = reservationStatusRepository.findById(request.getStatusId())
-                .orElseThrow(() -> new IllegalArgumentException("Вказано некоректний або неіснуючий код статусу замовлення."));
+                .orElseThrow(() -> new IllegalArgumentException("Вказано некоректний статус."));
 
-        // 3. Оновлюємо статус та час модифікації
+        // Якщо адміністратор підтверджує бронювання (id = 1), а воно ще не було підтверджене
+        if (request.getStatusId() == 1 && reservation.getStatus().getId() != 1) {
+
+            // Завантажуємо всі книги цього бронювання
+            List<ReservationBook> booksInReservation = reservationBookRepository.findByReservationId(reservationId);
+
+            // Перевірка доступності кожної книги
+            for (ReservationBook rb : booksInReservation) {
+                if (rb.getBook().getAvailableCopies() <= 0) {
+                    throw new IllegalArgumentException("Неможливо підтвердити: книга '" + rb.getBook().getName() + "' відсутня на складі (доступно 0).");
+                }
+            }
+
+            // Списання примірників зі складу
+            for (ReservationBook rb : booksInReservation) {
+                Book book = rb.getBook();
+                book.setAvailableCopies(book.getAvailableCopies() - 1);
+
+                // помилка під час збереження скасує попередні списання
+                // і жодна книга не буде списана, якщо чогось не вистачає.
+
+                // Якщо після списання доступних примірників стало 0
+                if (book.getAvailableCopies() == 0) {
+                    // Знаходимо статус "Немає в наявності"
+                    BookStatus outOfStockStatus = bookStatusRepository.findById(2)
+                            .orElseThrow(() -> new RuntimeException("Системний статус 'Немає в наявності' не знайдено"));
+
+                    // Автоматично переводимо книгу в цей статус
+                    book.setBookStatus(outOfStockStatus);
+                }
+            }
+
+
+
+        }
+
+        // Оновлюємо статус самого замовлення
         reservation.setStatus(newStatus);
         reservation.setUpdateTime(LocalDate.now());
 
-        // Зберігаємо зміни
         reservationRepository.save(reservation);
     }
 

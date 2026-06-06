@@ -68,7 +68,10 @@ public class BookService {
                 book.getPages(),
                 book.getGenre() != null ? book.getGenre().getName() : "Без жанру",
                 book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу",
-                book.getDescription() // <-- Додаємо виклик геттера опису
+                book.getDescription(),
+                book.getTotalCopies(),
+                book.getAvailableCopies()
+
         ));
     }
 
@@ -103,10 +106,22 @@ public class BookService {
                 book.getPages(),
                 book.getGenre() != null ? book.getGenre().getName() : "Без жанру",
                 book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу",
-                book.getDescription()
+                book.getDescription(),
+                book.getTotalCopies(),
+                book.getAvailableCopies()
         );
     }
-
+    /**
+     * Валідація інвентарю книги.
+     */
+    private void validateCopies(Book book) {
+        if (book.getAvailableCopies() < 0) {
+            throw new IllegalArgumentException("Доступна кількість примірників не може бути меншою за 0.");
+        }
+        if (book.getAvailableCopies() > book.getTotalCopies()) {
+            throw new IllegalArgumentException("Доступна кількість примірників не може перевищувати загальну кількість (" + book.getTotalCopies() + ").");
+        }
+    }
     /**
      * Оновлює існуючу книгу.
      * Захищає цілісність бази даних, перевіряючи наявність книги, жанру та статусу.
@@ -134,6 +149,10 @@ public class BookService {
         // 4. Оновлюємо зв'язки
         existingBook.setGenre(genre);
         existingBook.setBookStatus(status);
+
+        existingBook.setTotalCopies(updatedBookData.getTotalCopies());
+        existingBook.setAvailableCopies(updatedBookData.getAvailableCopies());
+        validateCopies(existingBook);
 
         // Зберігаємо оновлену книгу
         bookRepository.save(existingBook);
@@ -168,6 +187,7 @@ public class BookService {
         book.setBookStatus(status);
         book.setDescription(book.getDescription());
 
+        validateCopies(book);
         // 3. Зберігаємо
         bookRepository.save(book);
     }
