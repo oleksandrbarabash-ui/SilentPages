@@ -47,4 +47,19 @@ public class ReservationRestController {
         return ResponseEntity.ok(myReservations);
     }
 
+    /**
+     * Ендпоінт: PATCH /api/reservations/{id}/cancel
+     * Дозволяє читачу самостійно скасувати власне бронювання.
+     */
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<String> cancelMyReservation(@PathVariable int id) {
+        // Витягуємо email з токена
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        // Викликаємо сервіс
+        reservationService.cancelReservationByClient(id, email);
+
+        return ResponseEntity.ok("Ваше бронювання №" + id + " було успішно скасовано.");
+    }
 }

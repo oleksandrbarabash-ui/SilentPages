@@ -167,4 +167,35 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
+    /**
+     * Скасовує бронювання користувачем до його підтвердження адміністратором.
+     * Забезпечує перевірку власника та поточного статусу (дозволено тільки для "Очікування").
+     */
+    @Transactional
+    public void cancelReservationByClient(int reservationId, String email) {
+        // 1. Шукаємо бронювання
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("Бронювання з ID " + reservationId + " не знайдено."));
+
+        // 2. Обмеження: Перевіряємо, чи це бронювання належить поточному авторизованому користувачу
+        if (!reservation.getOwner().getEmail().equals(email)) {
+            throw new IllegalArgumentException("Помилка доступу: Ви не можете скасувати чуже бронювання.");
+        }
+
+        // 3. Обмеження: Скасувати можна ТІЛЬКИ якщо статус "Очікування" (id = 3)
+        if (reservation.getStatus().getId() != 3) {
+            throw new IllegalArgumentException("Неможливо скасувати бронювання. Воно вже підтверджене, завершене або скасоване.");
+        }
+
+        // 4. Шукаємо статус "Скасовано" (id = 6)
+        ReservationStatus cancelStatus = reservationStatusRepository.findById(6)
+                .orElseThrow(() -> new RuntimeException("Системний статус 'Скасовано' не знайдено в БД."));
+
+        // 5. Оновлюємо статус та фіксуємо час зміни
+        reservation.setStatus(cancelStatus);
+        reservation.setUpdateTime(LocalDate.now());
+
+        // Зберігаємо зміни
+        reservationRepository.save(reservation);
+    }
 }
