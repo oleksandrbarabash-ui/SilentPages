@@ -55,7 +55,8 @@ public class CartService {
                 book.getLanguage(),
                 book.getPages(),
                 book.getGenre() != null ? book.getGenre().getName() : "Без жанру",
-                book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу"
+                book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу",
+                book.getDescription()
         )).collect(Collectors.toList());
 
         return new CartDto(cart.getId(), bookDtos);

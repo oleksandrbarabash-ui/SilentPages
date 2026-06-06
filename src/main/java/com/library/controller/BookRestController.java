@@ -109,4 +109,21 @@ public class BookRestController {
     public ResponseEntity<List<String>> getAvailableLanguages() {
         return ResponseEntity.ok(bookService.getAllLanguages());
     }
+
+    /**
+     * Ендпоінт: PUT /api/books/{id}
+     * Що робить: Повністю оновлює дані існуючої книги (включно з описом).
+     * Доступний ТІЛЬКИ для адміністраторів.
+     */
+    @PutMapping("/books/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> updateBook(
+            @PathVariable int id,
+            @RequestBody Book updatedBook,
+            @RequestParam int genreId,
+            @RequestParam int statusId) {
+
+        bookService.updateBook(id, updatedBook, genreId, statusId);
+        return ResponseEntity.ok("Книгу успішно оновлено.");
+    }
 }

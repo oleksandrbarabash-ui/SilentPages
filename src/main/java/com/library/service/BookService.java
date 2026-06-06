@@ -9,6 +9,7 @@ import com.library.repository.BookStatusRepository;
 import com.library.dto.BookDto;
 import com.library.repository.specification.BookSpecifications;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -66,7 +67,8 @@ public class BookService {
                 book.getLanguage(),
                 book.getPages(),
                 book.getGenre() != null ? book.getGenre().getName() : "Без жанру",
-                book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу"
+                book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу",
+                book.getDescription() // <-- Додаємо виклик геттера опису
         ));
     }
 
@@ -100,25 +102,41 @@ public class BookService {
                 book.getLanguage(),
                 book.getPages(),
                 book.getGenre() != null ? book.getGenre().getName() : "Без жанру",
-                book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу"
+                book.getBookStatus() != null ? book.getBookStatus().getName() : "Без статусу",
+                book.getDescription()
         );
     }
 
     /**
-     * Оновлює зв'язки книги з жанром та статусом, перевіряючи їх наявність у системі.
-     * Захищає цілісність бази даних. Якщо фронтенд спробує прив'язати книгу до неіснуючого
-     * в MySQL жанру, метод викине контрольовану помилку (Exception) замість поломки бази даних.
+     * Оновлює існуючу книгу.
+     * Захищає цілісність бази даних, перевіряючи наявність книги, жанру та статусу.
      */
-    public void updateBook(Book book, int genreId, int statusId) {
+    @Transactional
+    public void updateBook(int bookId, Book updatedBookData, int genreId, int statusId) {
+        // 1. Знаходимо існуючу книгу
+        Book existingBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Книгу з ID " + bookId + " не знайдено."));
+
+        // 2. Знаходимо жанр та статус
         Genre genre = genreRepository.findById(genreId)
                 .orElseThrow(() -> new RuntimeException("Жанр не знайдено"));
 
         BookStatus status = bookStatusRepository.findById(statusId)
                 .orElseThrow(() -> new RuntimeException("Статус не знайдено"));
 
-        book.setGenre(genre);
-        book.setBookStatus(status);
-        bookRepository.save(book);
+        // 3. Оновлюємо поля
+        existingBook.setName(updatedBookData.getName());
+        existingBook.setAuthor(updatedBookData.getAuthor());
+        existingBook.setLanguage(updatedBookData.getLanguage());
+        existingBook.setPages(updatedBookData.getPages());
+        existingBook.setDescription(updatedBookData.getDescription());
+
+        // 4. Оновлюємо зв'язки
+        existingBook.setGenre(genre);
+        existingBook.setBookStatus(status);
+
+        // Зберігаємо оновлену книгу
+        bookRepository.save(existingBook);
     }
 
     /**
@@ -148,6 +166,7 @@ public class BookService {
 
         book.setGenre(genre);
         book.setBookStatus(status);
+        book.setDescription(book.getDescription());
 
         // 3. Зберігаємо
         bookRepository.save(book);

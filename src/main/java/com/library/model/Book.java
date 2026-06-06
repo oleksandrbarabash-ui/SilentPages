@@ -20,7 +20,6 @@ public class Book {
     private String author;   // Автор книги
     private String language; // Мова видання
     private int pages;       // Кількість сторінок
-
     // Зв'язок "Багато книг до одного статусу" (Foreign Key: book_status_id)
     @ManyToOne
     @JoinColumn(name = "book_status_id")
@@ -30,6 +29,9 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "genre_id")
     private Genre genre;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
     /**
      * Конструктор за замовчуванням (Порожній).
@@ -43,13 +45,14 @@ public class Book {
      * Використовується у коді розробника для швидкого створення
      * нового об'єкта книги перед збереженням її в базу даних.
      */
-    public Book(String name, String author, String language, int pages, BookStatus bookStatus, Genre genre) {
+    public Book(String name, String author, String language, int pages, BookStatus bookStatus, Genre genre, String description) {
         this.name = name;
         this.author = author;
         this.language = language;
         this.pages = pages;
         this.bookStatus = bookStatus;
         this.genre = genre;
+        this.description = description;
     }
 
     /**
@@ -69,4 +72,6 @@ public class Book {
     public void setBookStatus(BookStatus bookStatus) { this.bookStatus = bookStatus; }
     public Genre getGenre() { return genre; }
     public void setGenre(Genre genre) { this.genre = genre; }
+    public String getDescription() {return description;}
+    public void setDescription(String description) {this.description = description;}
 }
