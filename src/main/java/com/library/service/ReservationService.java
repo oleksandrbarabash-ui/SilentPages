@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import com.library.dto.AdminReservationDto;
 import com.library.dto.StatusUpdateRequest;
+import java.util.Arrays;
 
 @Service
 public class ReservationService {
@@ -36,7 +37,7 @@ public class ReservationService {
     /**
      * Створює загальне бронювання на основі книг із кошика,
      * реєструє кожну книгу в таблиці рядочків та повністю очищує кошик.
-     * Реалізує головне бізнес-правило оформлення замовлення читачем.
+     * Реалізує головне бізнес-правило оформлення замовлення читачем із перевіркою лімітів.
      */
     @Transactional
     public void createReservationFromCart(String email) {
@@ -49,14 +50,22 @@ public class ReservationService {
             throw new IllegalArgumentException("Неможливо оформити бронювання: ваш кошик порожній.");
         }
 
-        // 3. Завантажуємо системні початкові статуси з бази даних
+        // 3. БІЗНЕС-ПРАВИЛО: Перевірка ліміту активних бронювань (Максимум 5)
+        List<Integer> activeStatuses = Arrays.asList(1, 3, 4); // Підтверджено, Очікування, Прострочено
+        int activeReservationsCount = reservationRepository.countByOwnerEmailAndStatusIdIn(email, activeStatuses);
+
+        if (activeReservationsCount >= 5) {
+            throw new IllegalArgumentException("Перевищено ліміт: Ви не можете мати більше 5 активних бронювань одночасно.");
+        }
+
+        // 4. Завантажуємо системні початкові статуси з бази даних
         ReservationStatus initialStatus = reservationStatusRepository.findById(3)
                 .orElseThrow(() -> new RuntimeException("Системний статус бронювання 'Очікування' не знайдено в БД."));
 
         ReservationBookStatus initialBookStatus = reservationBookStatusRepository.findById(3)
                 .orElseThrow(() -> new RuntimeException("Системний статус книги в бронюванні 'Очікування' не знайдено в БД."));
 
-        // 4. Створюємо «шапку» бронювання
+        // 5. Створюємо «шапку» бронювання
         Reservation reservation = new Reservation();
         reservation.setOwner(cart.getUser());
         reservation.setStatus(initialStatus);
@@ -67,13 +76,13 @@ public class ReservationService {
         // Зберігаємо в базу, щоб згенерувався унікальний ID замовлення
         reservation = reservationRepository.save(reservation);
 
-        // 5. Переносимо кожну книгу з кошика в рядки бронювання
+        // 6. Переносимо кожну книгу з кошика в рядки бронювання
         for (Book book : cart.getBooks()) {
             ReservationBook reservationBook = new ReservationBook(reservation, book, initialBookStatus);
             reservationBookRepository.save(reservationBook);
         }
 
-        // 6. Критерій: Після успішного створення очищуємо список книг кошика
+        // 7. Критерій: Після успішного створення очищуємо список книг кошика
         cart.getBooks().clear();
         cartRepository.save(cart);
     }

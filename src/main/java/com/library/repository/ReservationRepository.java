@@ -14,4 +14,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
     // Витягуємо абсолютно всі бронювання для адмін-панелі
     List<Reservation> findAllByOrderByCreateTimeDesc();
+    // Рахує кількість бронювань користувача, статуси яких входять у переданий список
+    int countByOwnerEmailAndStatusIdIn(String email, List<Integer> activeStatusIds);
 }
