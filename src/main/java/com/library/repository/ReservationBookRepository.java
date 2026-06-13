@@ -17,4 +17,10 @@ public interface ReservationBookRepository extends JpaRepository<ReservationBook
 
     // Знаходить усі книги зі вказаним статусом, дата закінчення яких уже минула
     List<ReservationBook> findByEndDateBeforeAndStatusId(LocalDate date, int statusId);
+
+    // 1. Для попереджень за 1 день
+    List<ReservationBook> findByEndDateAndStatusIdAndEmailWarningSentFalse(LocalDate endDate, int statusId);
+
+    // 2. Для сповіщень про прострочення (знаходимо ті, які прострочені, але лист ще не пішов)
+    List<ReservationBook> findByEndDateBeforeAndStatusIdAndEmailOverdueSentFalse(LocalDate today, int statusId);
 }

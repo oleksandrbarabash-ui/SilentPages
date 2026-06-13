@@ -34,6 +34,12 @@ public class ReservationBook {
     @JoinColumn(name = "reservation_book_status_id", nullable = false)
     private ReservationBookStatus status;
 
+    @Column(name = "email_warning_sent", nullable = false)
+    private boolean emailWarningSent = false;
+
+    @Column(name = "email_overdue_sent", nullable = false)
+    private boolean emailOverdueSent = false;
+
     public ReservationBook() {}
 
     public ReservationBook(Reservation reservation, Book book, ReservationBookStatus status) {
@@ -56,4 +62,9 @@ public class ReservationBook {
     public void setStatus(ReservationBookStatus status) {
         this.status = status;
     }
+    public boolean isEmailWarningSent() { return emailWarningSent; }
+    public void setEmailWarningSent(boolean emailWarningSent) { this.emailWarningSent = emailWarningSent; }
+
+    public boolean isEmailOverdueSent() { return emailOverdueSent; }
+    public void setEmailOverdueSent(boolean emailOverdueSent) { this.emailOverdueSent = emailOverdueSent; }
 }
