@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
+import com.library.dto.StatusUpdateRequest;
 
 /**
  * REST-контролер для керування ресурсами книг.
@@ -74,14 +75,25 @@ public class BookRestController {
         return ResponseEntity.ok(bookDto);
     }
     /**
-     * Ендпоінт: DELETE /api/books/{id}
-     * Імітує видалення книги. Доступний ТІЛЬКИ для користувачів з роллю 'admin'.
-     * Для перевірки обмеження доступу на основі ролей (RBAC).
+     * DELETE /api/books/{id}
+     * Безпечне видалення книги (переведення в статус "Вилучено").
      */
     @DeleteMapping("/books/{id}")
-    @PreAuthorize("hasRole('ADMIN')") // Spring автоматично шукатиме "ROLE_ADMIN" в контексті
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteBook(@PathVariable int id) {
-        return ResponseEntity.ok("Успіх: Книгу з ID " + id + " видалено адміністратором.");
+        bookService.deleteBook(id);
+        return ResponseEntity.ok("Книгу успішно вилучено з каталогу.");
+    }
+
+    /**
+     * PATCH /api/books/{id}/status
+     * Зміна статусу книги адміністратором.
+     */
+    @PatchMapping("/books/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> updateBookStatus(@PathVariable int id, @RequestBody StatusUpdateRequest request) {
+        bookService.updateBookStatus(id, request.getStatusId());
+        return ResponseEntity.ok("Статус книги успішно змінено.");
     }
 
     /**

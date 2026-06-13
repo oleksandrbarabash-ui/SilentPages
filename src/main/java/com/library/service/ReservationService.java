@@ -69,8 +69,8 @@ public class ReservationService {
                 throw new IllegalArgumentException("Книга '" + book.getName() + "' закінчилася. Будь ласка, видаліть її з кошика перед оформленням.");
             }
 
-            // Перевірка за ручним статусом книги (id = 2 -> "Немає в наявності")
-            if (book.getBookStatus() != null && book.getBookStatus().getId() == 2) {
+            // Перевірка за ручним статусом книги (id = 2 -> "Немає в наявності", id = 3 -> "Вилучено")
+            if (book.getBookStatus() != null && (book.getBookStatus().getId() == 2 || book.getBookStatus().getId() == 3)) {
                 throw new IllegalArgumentException("Книга '" + book.getName() + "' більше недоступна для бронювання. Будь ласка, видаліть її з кошика.");
             }
         }

@@ -14,7 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-
+import com.library.repository.ReservationBookRepository;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,17 +29,19 @@ public class BookService {
     private final BookRepository bookRepository;
     private final BookStatusRepository bookStatusRepository;
     private final GenreRepository genreRepository;
-
+    private final ReservationBookRepository reservationBookRepository;
     /**
      * Єдиний конструктор сервісу для впровадження всіх репозиторіїв.
      * (Прибрано дублювання полів та аннотації @Autowired, тепер ініціалізація чиста та безпечна).
      */
     public BookService(BookRepository bookRepository,
                        BookStatusRepository bookStatusRepository,
-                       GenreRepository genreRepository) {
+                       GenreRepository genreRepository,
+                       ReservationBookRepository reservationBookRepository) {
         this.bookRepository = bookRepository;
         this.bookStatusRepository = bookStatusRepository;
         this.genreRepository = genreRepository;
+        this.reservationBookRepository = reservationBookRepository;
     }
 
     /**
@@ -54,7 +57,8 @@ public class BookService {
                 .and(BookSpecifications.hasSearchText(search))
                 .and(BookSpecifications.hasGenreId(genreId))
                 .and(BookSpecifications.hasStatusId(statusId))
-                .and(BookSpecifications.hasLanguage(language));
+                .and(BookSpecifications.hasLanguage(language))
+                .and((root, query, cb) -> cb.notEqual(root.get("bookStatus").get("id"), 3));
 
         // Виконуємо оптимізований запит у MySQL
         Page<Book> booksPage = bookRepository.findAll(spec, pageable);
@@ -205,5 +209,46 @@ public class BookService {
      */
     public List<String> getAllLanguages() {
         return bookRepository.findDistinctLanguages();
+    }
+
+    /**
+     * Оновлює виключно статус книги
+     */
+    @Transactional
+    public void updateBookStatus(int bookId, int statusId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Книгу з ID " + bookId + " не знайдено."));
+
+        BookStatus newStatus = bookStatusRepository.findById(statusId)
+                .orElseThrow(() -> new IllegalArgumentException("Вказаний статус не існує."));
+
+        book.setBookStatus(newStatus);
+        bookRepository.save(book);
+    }
+
+    /**
+     * "М'яке видалення" книги з перевіркою активних замовлень
+     */
+    @Transactional
+    public void deleteBook(int bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Книгу з ID " + bookId + " не знайдено."));
+
+        // 1. Перевіряємо активні бронювання (1 - Підтверджено, 3 - Очікування, 4 - Прострочено)
+        List<Integer> activeReservationStatuses = Arrays.asList(1, 3, 4);
+        boolean isActive = reservationBookRepository.existsByBookIdAndReservationStatusIdIn(bookId, activeReservationStatuses);
+
+        if (isActive) {
+            throw new IllegalArgumentException("Неможливо видалити книгу: вона зараз знаходиться в активних замовленнях читачів.");
+        }
+
+        // 2. Змінюємо статус на "Вилучено" (ID = 3)
+        BookStatus deletedStatus = bookStatusRepository.findById(3)
+                .orElseThrow(() -> new RuntimeException("Системний статус 'Вилучено' не знайдено"));
+
+        book.setBookStatus(deletedStatus);
+        book.setAvailableCopies(0); // Обнуляємо залишки про всяк випадок
+
+        bookRepository.save(book);
     }
 }

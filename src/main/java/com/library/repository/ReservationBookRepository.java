@@ -23,4 +23,7 @@ public interface ReservationBookRepository extends JpaRepository<ReservationBook
 
     // 2. Для сповіщень про прострочення (знаходимо ті, які прострочені, але лист ще не пішов)
     List<ReservationBook> findByEndDateBeforeAndStatusIdAndEmailOverdueSentFalse(LocalDate today, int statusId);
+
+    // Перевіряє, чи є книга частиною активного бронювання (за статусами самого бронювання)
+    boolean existsByBookIdAndReservationStatusIdIn(int bookId, List<Integer> statusIds);
 }
