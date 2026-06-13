@@ -1,12 +1,15 @@
 package com.library.controller;
 
 import com.library.dto.AdminReservationDto;
+import com.library.dto.ReservationDto;
 import com.library.dto.StatusUpdateRequest;
 import com.library.service.ReservationService;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 /**
@@ -43,5 +46,18 @@ public class AdminReservationRestController {
     public ResponseEntity<String> updateStatus(@PathVariable int id, @RequestBody StatusUpdateRequest request) {
         reservationService.updateReservationStatus(id, request);
         return ResponseEntity.ok("Статус бронювання №" + id + " успішно оновлено бібліотекарем.");
+    }
+
+    /**
+     * GET /api/admin/reservations/user/{userId}
+     * Повертає посторінковий список бронювань конкретного користувача.
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<Page<ReservationDto>> getUserReservations(
+            @PathVariable int userId,
+            @PageableDefault(page = 0, size = 10) Pageable pageable) {
+
+        Page<ReservationDto> userReservations = reservationService.getUserReservationsForAdmin(userId, pageable);
+        return ResponseEntity.ok(userReservations);
     }
 }

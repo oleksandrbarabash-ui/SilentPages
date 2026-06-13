@@ -266,4 +266,36 @@ public class ReservationService {
         // Зберігаємо зміни
         reservationRepository.save(reservation);
     }
+
+    /**
+     * Витягує бронювання конкретного клієнта за його ID (для Адміністратора).
+     */
+    @Transactional(readOnly = true)
+    public Page<ReservationDto> getUserReservationsForAdmin(int userId, Pageable pageable) {
+        // Знаходимо бронювання конкретного клієнта
+        Page<Reservation> reservationsPage = reservationRepository.findByOwnerIdOrderByCreateTimeDesc(userId, pageable);
+
+        // Конвертуємо у DTO
+        return reservationsPage.map(reservation -> {
+            List<ReservationBook> reservationBooks = reservationBookRepository.findByReservationId(reservation.getId());
+
+            List<ReservationBookItemDto> bookDtos = reservationBooks.stream().map(rb -> new ReservationBookItemDto(
+                    rb.getBook().getId(),
+                    rb.getBook().getName(),
+                    rb.getBook().getAuthor(),
+                    rb.getStatus().getName()
+            )).collect(Collectors.toList());
+
+            LocalDate reservationEndDate = reservationBooks.isEmpty() ? null : reservationBooks.get(0).getEndDate();
+
+            return new ReservationDto(
+                    reservation.getId(),
+                    reservation.getCreateTime(),
+                    reservation.getStatus().getName(),
+                    reservationEndDate,
+                    bookDtos
+            );
+        });
+    }
+
 }

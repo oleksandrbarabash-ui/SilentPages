@@ -13,6 +13,9 @@ import com.library.dto.LoginRequest;
 import com.library.dto.AuthResponse;
 import com.library.security.JwtProvider;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 /**
  * Сервіс для обробки логіки реєстрації та автентифікації користувачів.
@@ -116,6 +119,37 @@ public class AuthService {
     public UserDto getUserProfile(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Користувача з таким email не існує"));
+
+        return new UserDto(
+                user.getId(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole().getName()
+        );
+    }
+
+    /**
+     * Повертає список усіх клієнтів для адмін-панелі.
+     */
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll().stream().map(user -> new UserDto(
+                user.getId(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole().getName()
+        )).collect(Collectors.toList());
+    }
+
+    /**
+     * Повертає безпечний профіль користувача за його ID (без паролів).
+     */
+    public UserDto getUserById(int id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Користувача з ID " + id + " не знайдено."));
 
         return new UserDto(
                 user.getId(),

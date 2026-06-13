@@ -21,4 +21,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
 
     // Додаємо підтримку Pageable для списку бронювань конкретного користувача
     Page<Reservation> findByOwnerEmailOrderByCreateTimeDesc(String email, Pageable pageable);
+
+    // Пошук бронювань конкретного користувача за його ID (з пагінацією)
+    Page<Reservation> findByOwnerIdOrderByCreateTimeDesc(int ownerId, Pageable pageable);
 }
