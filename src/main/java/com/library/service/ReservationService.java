@@ -87,7 +87,6 @@ public class ReservationService {
         reservation.setOwner(cart.getUser());
         reservation.setStatus(initialStatus);
         reservation.setCreateTime(LocalDate.now());
-        reservation.setStartDate(LocalDate.now());
         reservation.setUpdateTime(LocalDate.now());
 
         // Зберігаємо в базу, щоб згенерувався унікальний ID замовлення
@@ -192,8 +191,10 @@ public class ReservationService {
         ReservationStatus newStatus = reservationStatusRepository.findById(request.getStatusId())
                 .orElseThrow(() -> new IllegalArgumentException("Вказано некоректний статус."));
 
-        // Якщо адміністратор підтверджує бронювання (id = 1), а воно ще не було підтверджене
+        // Якщо адміністратор підтверджує бронювання (id = 1)
         if (request.getStatusId() == 1 && reservation.getStatus().getId() != 1) {
+
+            reservation.setStartDate(LocalDate.now());
 
             // Завантажуємо всі книги цього бронювання
             List<ReservationBook> booksInReservation = reservationBookRepository.findByReservationId(reservationId);
@@ -205,6 +206,11 @@ public class ReservationService {
                 }
             }
 
+            //Завантажуємо статус "Отримано" (id = 1)
+            ReservationBookStatus receivedBookStatus = reservationBookStatusRepository.findById(1)
+                    .orElseThrow(() -> new RuntimeException("Системний статус книги 'Отримано' не знайдено"));
+
+
             // Списання примірників зі складу
             for (ReservationBook rb : booksInReservation) {
                 Book book = rb.getBook();
@@ -213,6 +219,7 @@ public class ReservationService {
                 // помилка під час збереження скасує попередні списання
                 // і жодна книга не буде списана, якщо чогось не вистачає.
                 rb.setEndDate(LocalDate.now().plusDays(14));
+                rb.setStatus(receivedBookStatus);
                 // Якщо після списання доступних примірників стало 0
                 if (book.getAvailableCopies() == 0) {
                     // Знаходимо статус "Немає в наявності"

@@ -22,7 +22,7 @@ public class Reservation {
     @Column(name = "create_time", nullable = false)
     private LocalDate createTime;
 
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "start_date")
     private LocalDate startDate;
 
     @Column(name = "update_time", nullable = false)

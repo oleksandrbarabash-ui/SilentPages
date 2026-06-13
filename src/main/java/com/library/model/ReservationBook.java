@@ -52,4 +52,8 @@ public class ReservationBook {
     public LocalDate getEndDate() { return endDate; }
     public ReservationBookStatus getStatus() { return status; }
     public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+
+    public void setStatus(ReservationBookStatus status) {
+        this.status = status;
+    }
 }
